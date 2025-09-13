@@ -1,33 +1,176 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>404 - Page Not Found</title>
-  <style>
-    body {
-      font-family: sans-serif;
-      text-align: center;
-      padding: 50px;
-      background-color: #f9f9f9;
-    }
-    h1 {
-      font-size: 3em;
-      margin-bottom: 0.5em;
-    }
-    p {
-      font-size: 1.2em;
-    }
-  </style>
-</head>
-<body>
-  <h1>404</h1>
-  <p>Oops! Page not found.</p>
-  <p>Redirecting to home...</p>
+// src/components/InfographicAnimator.jsx
+import React, { useState, useEffect } from 'react';
+import { Play, Pause, RotateCcw, Download, Settings } from 'lucide-react';
 
-  <script>
-    // Redirect to index.html for SPA routing
-    window.location.replace('/');
-  </script>
-</body>
-</html>
+export default function InfographicAnimator() {
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [currentFrame, setCurrentFrame] = useState(0);
+  const [animationSpeed, setAnimationSpeed] = useState(1);
+  
+  // Mock data for demonstration
+  const frames = Array.from({ length: 10 }, (_, i) => ({
+    id: i,
+    title: `Frame ${i + 1}`,
+    duration: 1000
+  }));
+
+  useEffect(() => {
+    let interval;
+    if (isPlaying) {
+      interval = setInterval(() => {
+        setCurrentFrame(prev => (prev + 1) % frames.length);
+      }, 1000 / animationSpeed);
+    }
+    return () => clearInterval(interval);
+  }, [isPlaying, animationSpeed, frames.length]);
+
+  const handlePlayPause = () => {
+    setIsPlaying(!isPlaying);
+  };
+
+  const handleReset = () => {
+    setIsPlaying(false);
+    setCurrentFrame(0);
+  };
+
+  const handleFrameSelect = (frameIndex) => {
+    setCurrentFrame(frameIndex);
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50 p-6">
+      <div className="max-w-6xl mx-auto">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            Infographic Animator
+          </h1>
+          <p className="text-gray-600">
+            Create animated infographics with ease
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          {/* Main Canvas */}
+          <div className="lg:col-span-3">
+            <div className="bg-white rounded-lg shadow-sm border p-6">
+              <div className="bg-gray-100 rounded-lg h-96 flex items-center justify-center mb-6">
+                <div className="text-center">
+                  <div className="text-6xl font-bold text-indigo-600 mb-2">
+                    {currentFrame + 1}
+                  </div>
+                  <div className="text-gray-500">
+                    {frames[currentFrame]?.title}
+                  </div>
+                </div>
+              </div>
+
+              {/* Controls */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <button
+                    onClick={handlePlayPause}
+                    className="flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+                  >
+                    {isPlaying ? (
+                      <Pause className="w-4 h-4 mr-2" />
+                    ) : (
+                      <Play className="w-4 h-4 mr-2" />
+                    )}
+                    {isPlaying ? 'Pause' : 'Play'}
+                  </button>
+                  
+                  <button
+                    onClick={handleReset}
+                    className="flex items-center px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                  >
+                    <RotateCcw className="w-4 h-4 mr-2" />
+                    Reset
+                  </button>
+                </div>
+
+                <div className="flex items-center space-x-3">
+                  <label className="text-sm text-gray-600">Speed:</label>
+                  <select 
+                    value={animationSpeed}
+                    onChange={(e) => setAnimationSpeed(Number(e.target.value))}
+                    className="px-3 py-1 border border-gray-300 rounded text-sm"
+                  >
+                    <option value={0.5}>0.5x</option>
+                    <option value={1}>1x</option>
+                    <option value={1.5}>1.5x</option>
+                    <option value={2}>2x</option>
+                  </select>
+                  
+                  <button className="p-2 text-gray-500 hover:text-gray-700 transition-colors">
+                    <Download className="w-4 h-4" />
+                  </button>
+                  
+                  <button className="p-2 text-gray-500 hover:text-gray-700 transition-colors">
+                    <Settings className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Timeline/Frames Panel */}
+          <div className="lg:col-span-1">
+            <div className="bg-white rounded-lg shadow-sm border p-4">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                Timeline
+              </h3>
+              
+              <div className="space-y-2">
+                {frames.map((frame, index) => (
+                  <div
+                    key={frame.id}
+                    onClick={() => handleFrameSelect(index)}
+                    className={`p-3 rounded-lg border cursor-pointer transition-colors ${
+                      currentFrame === index
+                        ? 'border-indigo-500 bg-indigo-50'
+                        : 'border-gray-200 hover:bg-gray-50'
+                    }`}
+                  >
+                    <div className="text-sm font-medium text-gray-900">
+                      {frame.title}
+                    </div>
+                    <div className="text-xs text-gray-500">
+                      {frame.duration}ms
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <button className="w-full mt-4 px-4 py-2 border border-dashed border-gray-300 text-gray-500 rounded-lg hover:border-gray-400 hover:text-gray-600 transition-colors">
+                + Add Frame
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Progress Bar */}
+        <div className="mt-6">
+          <div className="bg-white rounded-lg shadow-sm border p-4">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm text-gray-600">
+                Frame {currentFrame + 1} of {frames.length}
+              </span>
+              <span className="text-sm text-gray-600">
+                {Math.round((currentFrame / (frames.length - 1)) * 100)}%
+              </span>
+            </div>
+            <div className="w-full bg-gray-200 rounded-full h-2">
+              <div 
+                className="bg-indigo-600 h-2 rounded-full transition-all duration-300"
+                style={{ 
+                  width: `${(currentFrame / (frames.length - 1)) * 100}%` 
+                }}
+              ></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
